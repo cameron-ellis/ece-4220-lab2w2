@@ -39,7 +39,7 @@ struct period_info {
 // Thread related Real-time functions
 // ========================
 
-static void periodic_task_init(struct period_info *pinfo, long period);
+static void periodic_task_init(struct period_info *pinfo);
 static void increment_period(struct period_info *pinfo);
 static void wait_rest_of_period(struct period_info *pinfo);
 
@@ -65,29 +65,109 @@ void *getFirstThd(void *ptr){
 
         
     //Open File
-	
+	FILE* f;
+	f = fopen("first.txt","r");
 	//Check to make sure file opened correctly
+	if (f == NULL)
+	{
+		printf("first.txt failed to open!\n");
+		exit(1);
+	}
 	
-        
-
 	// Initialize the periodic Task and read line at a time from "First.txt"
-	
+	struct period_info pinfo;
+	periodic_task_init(&pinfo);
 	//Loop{
 	//Read a line then wait_rest_of_period
 	//}
+	int i = 0;
+	while(i < 10) {
+		fgets(commonBuff,256,f);
+		i++;
+		wait_rest_of_period(pinfo);
+	}
 	//Exit pthread
-	
+	pthread_exit(0);
 }
 
 // Thread-2 to read from "second.txt"
 void *getSecThd(void *ptr)
-{}
+{
+	//Get string pointer from main
+
+	char *commonBuff;
+	commonBuff = (char *)ptr;
+        
+
+
+	// Declare it as a real time task and pass the necessary params to the scheduler 
+	struct sched_param param;
+    param.sched_priority = MY_PRIORITY;
+    if (sched_setscheduler(0, SCHED_FIFO, &param) == -1) {
+        printf("Run the program as a sudo user\n");
+ 	    perror("sched_setscheduler failed, thread 1");
+    	exit(20);
+    }
+
+        
+    //Open File
+	FILE* f;
+	f = fopen("second.txt","r");
+	//Check to make sure file opened correctly
+	if (f == NULL)
+	{
+		printf("second.txt failed to open!\n");
+		exit(1);
+	}
+	
+	// Initialize the periodic Task and read line at a time from "Second.txt"
+	struct period_info pinfo;
+	periodic_task_init(&pinfo);
+	//Loop{
+	//Read a line then wait_rest_of_period
+	//}
+	int i = 0;
+	while(i < 10) {
+		fgets(commonBuff,256,f);
+		i++;
+		wait_rest_of_period(pinfo);
+	}
+	//Exit pthread
+	pthread_exit(0);
+}
 
 // Thread-3 to copy the results into final buffer.
 void *getThirdThd(void *ptr){
+	//Get buffer pointer from main
 
-
-
+	struct Buffers myBuffers;
+	myBuffers = (Buffers *)ptr
+    
+	// Declare it as a real time task and pass the necessary params to the scheduler 
+	struct sched_param param;
+    param.sched_priority = MY_PRIORITY;
+    if (sched_setscheduler(0, SCHED_FIFO, &param) == -1) {
+        printf("Run the program as a sudo user\n");
+ 	    perror("sched_setscheduler failed, thread 1");
+    	exit(20);
+    }
+	
+	// Initialize the periodic Task and combine the strings from the buffer
+	struct period_info pinfo;
+	periodic_task_init(&pinfo);
+	//Loop{
+	//Read a line then wait_rest_of_period
+	//}
+	int i = 0;
+	while (i < 19)
+	{
+		strcpy(fullString[i], myBuffers->sBuffer1);
+		strcpy(fullString[i+1], myBuffers->sBuffer2);
+		wait_rest_of_period(&pinfo);
+	}
+	
+	// Exit thread
+	pthread_exit(0);
 }
 
 int main(void) 
@@ -107,9 +187,9 @@ int main(void)
 	// Create 3 different threads -- First 2 threads will read from two
 	// separate files and the 3rd will merge the two sets of information into
 	// one.
-	// Pass the Scheduler attributes to those threads
-
-
+	pthread_create(thrd1, NULL, &getFirstThd, myBuffers.sBuffer1);
+	pthread_create(thrd2, NULL, &getSecThd, myBuffers.sBuffer2);
+	pthread_create(thrd3, NULL, &getThirdThd, &(myBuffers));
 
 
 	//Join pthreads and check to make sure they joined correctly	
@@ -141,5 +221,29 @@ void print_results(){
 
 
 
+static void periodic_task_init(struct period_info *pinfo)
+{
+        /* for simplicity, hardcoding a 1ms period */
+        pinfo->period_ns = 1000000;
+ 
+        clock_gettime(CLOCK_MONOTONIC, &(pinfo->next_period));
+}
 
+static void inc_period(struct period_info *pinfo) 
+{
+        pinfo->next_period.tv_nsec += pinfo->period_ns;
+ 
+        while (pinfo->next_period.tv_nsec >= 1000000000) {
+                /* timespec nsec overflow */
+                pinfo->next_period.tv_sec++;
+                pinfo->next_period.tv_nsec -= 1000000000;
+        }
+}
 
+static void wait_rest_of_period(struct period_info *pinfo)
+{
+        inc_period(pinfo);
+ 
+        /* for simplicity, ignoring possibilities of signal wakes */
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &pinfo->next_period, NULL);
+}
