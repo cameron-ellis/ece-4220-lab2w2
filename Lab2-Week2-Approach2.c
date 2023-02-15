@@ -84,7 +84,7 @@ void *getFirstThd(void *ptr){
 	while(i < 10) {
 		fgets(commonBuff,256,f);
 		i++;
-		wait_rest_of_period(pinfo);
+		wait_rest_of_period(&pinfo);
 	}
 	//Exit pthread
 	pthread_exit(0);
@@ -130,7 +130,7 @@ void *getSecThd(void *ptr)
 	while(i < 10) {
 		fgets(commonBuff,256,f);
 		i++;
-		wait_rest_of_period(pinfo);
+		wait_rest_of_period(&pinfo);
 	}
 	//Exit pthread
 	pthread_exit(0);
@@ -140,8 +140,8 @@ void *getSecThd(void *ptr)
 void *getThirdThd(void *ptr){
 	//Get buffer pointer from main
 
-	struct Buffers myBuffers;
-	myBuffers = (Buffers *)ptr
+	struct Buffers* myBuffers;
+	myBuffers = (struct Buffers *)ptr;
     
 	// Declare it as a real time task and pass the necessary params to the scheduler 
 	struct sched_param param;
@@ -187,12 +187,15 @@ int main(void)
 	// Create 3 different threads -- First 2 threads will read from two
 	// separate files and the 3rd will merge the two sets of information into
 	// one.
-	pthread_create(thrd1, NULL, &getFirstThd, myBuffers.sBuffer1);
-	pthread_create(thrd2, NULL, &getSecThd, myBuffers.sBuffer2);
-	pthread_create(thrd3, NULL, &getThirdThd, &(myBuffers));
+	pthread_create(&thrd1, NULL, &getFirstThd, myBuffers.sBuffer1);
+	pthread_create(&thrd2, NULL, &getSecThd, myBuffers.sBuffer2);
+	pthread_create(&thrd3, NULL, &getThirdThd, &(myBuffers));
 
 
-	//Join pthreads and check to make sure they joined correctly	
+	//Join pthreads and check to make sure they joined correctly
+	pthread_join(thrd1, NULL);
+	pthread_join(thrd2, NULL);
+	pthread_join(thrd3, NULL);	
 }
 
 
@@ -202,11 +205,16 @@ int main(void)
 // Function to print out results
 void print_results(){
 	//Print out full string
-
+	for (int i = 0; i < 20; i++)
+	{
+		for (int j = 0; j != '\n'; j++)
+		{
+			printf("%c", fullString[i][j]);
+		}
+		printf("\n");
+	}
+	
 }
-
-
-
 
 
 //Write a function to determine the starting time of the thread
