@@ -35,12 +35,11 @@ struct period_info {
 };
 
 
-
 // Thread related Real-time functions
 // ========================
 
 static void periodic_task_init(struct period_info *pinfo);
-static void increment_period(struct period_info *pinfo);
+static void inc_period(struct period_info *pinfo);
 static void wait_rest_of_period(struct period_info *pinfo);
 
 
@@ -166,6 +165,7 @@ void *getThirdThd(void *ptr){
 		strcpy(fullString[i], myBuffers->sBuffer1);
 		strcpy(fullString[i+1], myBuffers->sBuffer2);
 		wait_rest_of_period(&pinfo);
+		i += 2;
 	}
 	// Exit thread
 	pthread_exit(0);
@@ -193,7 +193,10 @@ int main(void)
 	//Join pthreads and check to make sure they joined correctly
 	pthread_join(thrd1, NULL);
 	pthread_join(thrd2, NULL);
-	pthread_join(thrd3, NULL);	
+	pthread_join(thrd3, NULL);
+
+	// PRINT
+	print_results();	
 }
 
 
@@ -205,13 +208,8 @@ void print_results(){
 	//Print out full string
 	for (int i = 0; i < 20; i++)
 	{
-		for (int j = 0; j != '\n'; j++)
-		{
-			printf("%c", fullString[i][j]);
-		}
-		printf("\n");
+		printf("%s", fullString[i]);
 	}
-	
 }
 
 //Write a function to determine the starting time of the thread
