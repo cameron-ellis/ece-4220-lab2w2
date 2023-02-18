@@ -4,7 +4,7 @@ Lab2_Week2 : Lab2-Week2-Approach2.c
 
 .PHONY : run
 run :
-		./Lab2_Week2
+		sudo ./Lab2_Week2
 
 .PHONY : clean
 clean :

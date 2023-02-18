@@ -222,7 +222,6 @@ static void periodic_task_init(struct period_info *pinfo)
 }
 
 // Write a function to the determine the ending time of the thread based on the initialized time
-//static void increment_period(struct period_info *pinfo);
 static void inc_period(struct period_info *pinfo) 
 {
         pinfo->next_period.tv_nsec += pinfo->period_ns;
