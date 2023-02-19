@@ -49,8 +49,7 @@ void *getFirstThd(void *ptr){
 	//Get string pointer from main
 
 	char *commonBuff;
-	commonBuff = (char *)ptr;
-        
+	commonBuff = (char *)ptr;    
 
 
 	// Declare it as a real time task and pass the necessary params to the scheduler 
@@ -164,6 +163,8 @@ void *getThirdThd(void *ptr){
 	{
 		strcpy(fullString[i], myBuffers->sBuffer1);
 		strcpy(fullString[i+1], myBuffers->sBuffer2);
+		memset(myBuffers->sBuffer1, '\0', 256);
+		memset(myBuffers->sBuffer2, '\0', 256);
 		wait_rest_of_period(&pinfo);
 		i += 2;
 	}
@@ -178,6 +179,8 @@ int main(void)
     
     char sBuffer1[256];
 	char sBuffer2[256];
+	memset(sBuffer1, '\0', 256);
+	memset(sBuffer2, '\0', 256);
 	struct Buffers myBuffers;
 	myBuffers.sBuffer1 = (char *)&sBuffer1;
 	myBuffers.sBuffer2 = (char *)&sBuffer2;
