@@ -179,8 +179,11 @@ int main(void)
     
     char sBuffer1[256];
 	char sBuffer2[256];
+
+	//Clear buffers for writing
 	memset(sBuffer1, '\0', 256);
 	memset(sBuffer2, '\0', 256);
+
 	struct Buffers myBuffers;
 	myBuffers.sBuffer1 = (char *)&sBuffer1;
 	myBuffers.sBuffer2 = (char *)&sBuffer2;
@@ -198,7 +201,7 @@ int main(void)
 	pthread_join(thrd2, NULL);
 	pthread_join(thrd3, NULL);
 
-	// PRINT
+	//PRINT
 	print_results();	
 }
 
